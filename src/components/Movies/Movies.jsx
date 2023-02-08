@@ -1,33 +1,31 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import PropTypes, { objectOf } from 'prop-types';
 
-import './Movies.css';
-
-import { Header } from '../Header';
+import { SHORT_DURATION } from '../../constants';
+import { moviesApi } from '../../utils';
+import { CurrentUserContext } from '../contexts';
 import { Footer } from '../Footer';
-import { SearchForm } from './SearchForm';
+import { Header } from '../Header';
+
 import { MoviesCardList } from './MoviesCardList';
 import { Loader } from './Preloader';
-import { moviesApi } from '../../utils';
-import { SHORT_DURATION } from '../../constants';
+import { SearchForm } from './SearchForm';
+import { MoviesStyled } from './styled';
 
-import { CurrentUserContext } from '../contexts';
-
-
-export function Movies({ 
-  loggedIn, 
-  onSaveFilm, 
-  onDeleteFilm, 
+export function Movies({
+  loggedIn,
+  onSaveFilm,
+  onDeleteFilm,
   savedMoviesList,
-  }) {
-  const user = useContext(CurrentUserContext);
-
-  const [isLoading, setIsLoading] = useState(false)
+}) {
+  const { email } = useContext(CurrentUserContext);
+  const [isLoading, setIsLoading] = useState(false);
   const [moviesFromSearch, setMoviesFromSearch] = useState([]);
   const [shortMovies, setShortMovies] = useState(false);
   const [filteredMovies, setFilteredMovies] = useState([]);
 
   const [isNothing, setIsNothing] = useState(false);
-  
+
   function filterShortMovies(movies) {
     return movies.filter(movie => movie.duration < SHORT_DURATION);
   }
@@ -35,111 +33,94 @@ export function Movies({
     function lower(x) {
       return x.toLowerCase().trim();
     }
-    const filteredMovies = movies.filter((movie) => {
+    return movies.filter(movie => {
       const userMovie = lower(userSearch);
       const movieRu = lower(String(movie.nameRU)).indexOf(userMovie) !== -1;
       const movieEn = lower(String(movie.nameEN)).indexOf(userMovie) !== -1;
       const result = movieRu || movieEn;
       return result;
     });
-    return filteredMovies;
   }
   function transformMovies(movies) {
-    movies.forEach(movie => {
-      if (!movie.image) {
-        movie.image = 'https://images.unsplash.com/photo-1485846234645-a62644f84728?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1940&q=80';
-        movie.thumbnail = 'https://images.unsplash.com/photo-1485846234645-a62644f84728?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1940&q=80';
-      } else {
-        movie.thumbnail = `https://api.nomoreparties.co${movie.image.formats.thumbnail.url}`
-        movie.image = `https://api.nomoreparties.co${movie.image.url}`
-      }
-      if (!movie.country) {
-        movie.country = 'Russia';
-      }
-      if (!movie.nameEN) {
-        movie.nameEN = movie.nameRU;
-      }
-      if (!movie.nameRU) {
-        movie.nameRU = movie.nameEN;
-      }
-    });
-    return movies
+    return movies.map(movie => ({
+      ...movie,
+      image: !movie.image
+        ? process.env.REACT_APP_DEFAULT_IMAGE
+        : `https://api.nomoreparties.co${movie.image.url}`,
+      thumbnail: !movie.image
+        ? process.env.REACT_APP_DEFAULT_IMAGE
+        : `https://api.nomoreparties.co${movie.image.formats.thumbnail.url}`,
+      country: !movie.country ? 'Russia' : movie.country,
+      nameEN: !movie.nameEN ? movie.nameRU : movie.nameEN,
+      nameRU: !movie.nameRU ? movie.nameEN : movie.nameRU,
+    }));
   }
-  
+
   function handleAnswerMovies(movies, searchData, checkbox) {
-    const moviesBlock = filterMovies(movies, searchData)
+    const moviesBlock = filterMovies(movies, searchData);
     if (moviesBlock.length === 0) {
-      console.log('Таких архивов не найдено');
       setIsNothing(true);
     } else {
       setIsNothing(false);
     }
-    
+
     setMoviesFromSearch(moviesBlock);
-    setFilteredMovies(
-      checkbox ? filterShortMovies(moviesBlock) : moviesBlock
-    )
+    setFilteredMovies(checkbox ? filterShortMovies(moviesBlock) : moviesBlock);
   }
 
   function handleSearch(value, isShortMovies) {
-    localStorage.setItem(`${user.email} - movieSearch`, value);
-    localStorage.setItem(`${user.email} - shortMovies`, shortMovies);
+    localStorage.setItem(`${email} - movieSearch`, value);
+    localStorage.setItem(`${email} - shortMovies`, shortMovies);
 
-    const storageMovies = localStorage.getItem(`${user.email} - movies`);
+    const storageMovies = localStorage.getItem(`${email} - movies`);
     if (!storageMovies) {
       setIsLoading(true);
       moviesApi
         .getAllMovies()
         .then(movies => {
-          localStorage.setItem(
-            `${user.email} - movies`,
-            JSON.stringify(movies)
-          );
-          handleAnswerMovies(
-            transformMovies(movies),
-            value,
-            isShortMovies,
-          );
+          localStorage.setItem(`${email} - movies`, JSON.stringify(movies));
+          handleAnswerMovies(transformMovies(movies), value, isShortMovies);
         })
         .catch(() => {
-          localStorage.setItem(
-            `${user.email} - movies`,
-            JSON.stringify([])
-          );
-          console.log('Во время запроса произошла ошибка. Возможно, проблема с соединением или сервер недоступен. Подождите немного и попробуйте ещё раз.')
+          localStorage.setItem(`${email} - movies`, JSON.stringify([]));
+          // console.log(process.env.REACT_APP_ERROR_TEXT);
         })
         .finally(() => {
           setIsLoading(false);
-        })
-      } else {
-        handleAnswerMovies(
-          transformMovies(JSON.parse(storageMovies)),
-          value,
-          isShortMovies,
-        );
-      }
+        });
+    } else {
+      handleAnswerMovies(
+        transformMovies(JSON.parse(storageMovies)),
+        value,
+        isShortMovies,
+      );
+    }
   }
 
-  function handleShortMovies() {
+  const handleShortMovies = () => {
     setShortMovies(!shortMovies);
-    !shortMovies 
-      ? setFilteredMovies(filterShortMovies(moviesFromSearch))
-      : setFilteredMovies(moviesFromSearch);
+    if (!shortMovies) {
+      setFilteredMovies(filterShortMovies(moviesFromSearch));
+    } else {
+      setFilteredMovies(moviesFromSearch);
+    }
 
-    localStorage.setItem(`${user.email} - shortMovies`, !shortMovies);
-  }
+    localStorage.setItem(`${email} - shortMovies`, !shortMovies);
+  };
 
   useEffect(() => {
-    const isShortMovies = localStorage.getItem(`${user.email} - shortMovies`) === 'true';
+    const isShortMovies =
+      localStorage.getItem(`${email} - shortMovies`) === 'true';
     setShortMovies(isShortMovies);
-  }, [user]);
+  }, [email]);
 
   useEffect(() => {
-    const storageMovies = localStorage.getItem(`${user.email} - movies`);
+    const storageMovies = localStorage.getItem(`${email} - movies`);
 
     if (storageMovies) {
-      const isShortMovies = localStorage.getItem(`${user.email} - shortMovies`) === 'true';
-      const value = localStorage.getItem(`${user.email} - movieSearch`);
+      const isShortMovies =
+        localStorage.getItem(`${email} - shortMovies`) === 'true';
+      const value = localStorage.getItem(`${email} - movieSearch`);
       handleAnswerMovies(
         transformMovies(JSON.parse(storageMovies)),
         value,
@@ -149,24 +130,31 @@ export function Movies({
   }, []);
 
   return (
-  <>
-    {isLoading && <Loader />}
-    <Header loggedIn={loggedIn} />
-    <section className="movies">
-        <SearchForm 
-          onSubmit={(value) => handleSearch(value, shortMovies)} 
+    <>
+      {isLoading && <Loader />}
+      <Header loggedIn={loggedIn} />
+      <MoviesStyled>
+        <SearchForm
+          onSubmit={value => handleSearch(value, shortMovies)}
           handleShortMovies={handleShortMovies}
           shortMovies={shortMovies}
-          />
+        />
         <MoviesCardList
-          onSaveFilm={onSaveFilm} 
-          onDeleteFilm={onDeleteFilm} 
+          onSaveFilm={onSaveFilm}
+          onDeleteFilm={onDeleteFilm}
           savedMoviesList={savedMoviesList}
           moviesForShow={filteredMovies}
           isNothing={isNothing}
-          />
-    </section>
-    <Footer />
-  </>
-  ); 
+        />
+      </MoviesStyled>
+      <Footer />
+    </>
+  );
+}
+
+Movies.propTypes = {
+  loggedIn: PropTypes.bool.isRequired,
+  onSaveFilm: PropTypes.func.isRequired,
+  onDeleteFilm: PropTypes.func.isRequired,
+  savedMoviesList: PropTypes.arrayOf(objectOf).isRequired,
 };

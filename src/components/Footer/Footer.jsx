@@ -1,17 +1,38 @@
-import './Footer.css';
+import React from 'react';
+
+import {
+  FooterBorder,
+  FooterCopy,
+  FooterLink,
+  FooterLinks,
+  FooterNav,
+  FooterStyled,
+  FooterTitle,
+} from './styled';
 
 export function Footer() {
   return (
-    <footer className="footer">
-      <p className="footer__title">Учебный проект Яндекс.Практикум х BeatFilm.</p>
-      <div className="footer__border"></div>
-      <nav className="footer__nav">
-        <p className="footer__copy">&copy;{new Date().getFullYear()}</p>
-        <div className="footer__links">
-          <a href="https://practicum.yandex.ru" className="footer__link" target="_blank" rel="noreferrer">Яндекс.Практикум</a>
-          <a href="https://github.com/ChernoSlava" className="footer__link footer__last-link" target="_blank" rel="noreferrer">Github</a>
-        </div>
-      </nav>
-    </footer>
+    <FooterStyled>
+      <FooterTitle>Учебный проект Яндекс.Практикум х BeatFilm.</FooterTitle>
+      <FooterBorder />
+      <FooterNav>
+        <FooterCopy>&copy;{new Date().getFullYear()}</FooterCopy>
+        <FooterLinks>
+          <FooterLink
+            href="https://practicum.yandex.ru"
+            target="_blank"
+            rel="noreferrer">
+            Яндекс.Практикум
+          </FooterLink>
+          <FooterLink
+            href="https://github.com/ChernoSlava"
+            target="_blank"
+            rel="noreferrer"
+            last>
+            Github
+          </FooterLink>
+        </FooterLinks>
+      </FooterNav>
+    </FooterStyled>
   );
-};
+}

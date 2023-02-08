@@ -1,27 +1,32 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
-import './Main.css';
-
-import { Header } from '../Header';
 import { Footer } from '../Footer';
-import { Promo } from './Promo';
-import { AboutProject } from './AboutProject';
-import { Techs } from './Techs';
+import { Header } from '../Header';
+
 import { AboutMe } from './AboutMe';
+import { AboutProject } from './AboutProject';
 import { Portfolio } from './Portfolio';
+import { Promo } from './Promo';
+import { MainStyled } from './styled';
+import { Techs } from './Techs';
 
 export function Main({ loggedIn }) {
   return (
     <>
       <Header loggedIn={loggedIn} />
-      <main className="main">
-        <Promo/>
+      <MainStyled>
+        <Promo />
         <AboutProject />
         <Techs />
         <AboutMe />
         <Portfolio />
-      </main>
+      </MainStyled>
       <Footer />
     </>
   );
+}
+
+Main.propTypes = {
+  loggedIn: PropTypes.bool.isRequired,
 };

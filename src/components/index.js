@@ -9,7 +9,7 @@ export { Navigation } from './Navigation';
 export { Profile } from './Profile';
 export { Register } from './Register';
 export { SavedMovies } from './SavedMovies';
-export { ErrorPage } from "./ErrorPage";
+export { ErrorPage } from './ErrorPage';
 export { ProtectedRoute } from './ProtectedRoute';
 export { CurrentUserContext } from './contexts';
 export { Popup } from './Popup';

@@ -1,22 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import PropTypes, { objectOf } from 'prop-types';
 
-import './MoviesCardList.css';
-
-import { MoviesCard } from '../MoviesCard';
 import {
-  ROUTER_PATH, 
-  SCREEN_SIZE,
+  ADD_CARDS,
   FEATURED_CARDS,
-  ADD_CARDS 
+  ROUTER_PATH,
+  SCREEN_SIZE,
 } from '../../../constants';
+import { MoviesCard } from '../MoviesCard';
+
+import {
+  MoviesCardButton,
+  MoviesCardListElement,
+  MoviesCardListNothing,
+  MoviesCardListStyled,
+} from './styled';
 
 export function MoviesCardList({
   onSaveFilm,
   onDeleteFilm,
   savedMoviesList,
   moviesForShow,
-  isNothing
+  isNothing,
 }) {
   const location = useLocation();
 
@@ -24,47 +30,51 @@ export function MoviesCardList({
   const [sizeScreen, setSizeSreen] = useState({ width: window.innerWidth });
   const [pageSize, setPageSize] = useState(0);
 
-
-  const isNothingText = isNothing && <span className='movies-card-list__nothing'>Ничего не найдено</span>;
+  const isNothingText = isNothing && (
+    <MoviesCardListNothing>Ничего не найдено</MoviesCardListNothing>
+  );
   const isMoviesLocation = location.pathname === ROUTER_PATH.MOVIES;
-  const isMovies = isMoviesLocation && moviesForShow.length > currentPage + pageSize;
+  const isMovies =
+    isMoviesLocation && moviesForShow.length > currentPage + pageSize;
 
   function getSavedMovieCard(arr, movie) {
-    return arr.find((item) => {
+    return arr.find(item => {
       return item.movieId === (movie.id || movie.movieId);
     });
   }
   const takeWidthScreen = () => {
     setSizeSreen({
-      width: window.innerWidth
-    })
-  }
+      width: window.innerWidth,
+    });
+  };
 
   useEffect(() => {
-    window.addEventListener('resize', takeWidthScreen)
+    window.addEventListener('resize', takeWidthScreen);
 
     return () => {
-      window.removeEventListener('resize', takeWidthScreen)
-    }
+      window.removeEventListener('resize', takeWidthScreen);
+    };
   }, [sizeScreen]);
 
   useEffect(() => {
-    let win = sizeScreen.width;
+    const win = sizeScreen.width;
     if (win > SCREEN_SIZE.MIDDLE) {
       setPageSize(FEATURED_CARDS.LARGE);
     } else if (win > SCREEN_SIZE.LITTLE) {
       setPageSize(FEATURED_CARDS.MEDIUM);
-    }
-    else {
+    } else {
       setPageSize(FEATURED_CARDS.SMALL);
     }
-  }, [sizeScreen.width])
+  }, [sizeScreen.width]);
 
   return (
-    <section className="movies-card-list">
+    <MoviesCardListStyled>
       {isNothingText}
-      <ul className='movies-card-list__list'>
-        {(isMoviesLocation ? moviesForShow?.slice(0, pageSize + currentPage) : moviesForShow).map(movie => (
+      <MoviesCardListElement>
+        {(isMoviesLocation
+          ? moviesForShow.slice(0, pageSize + currentPage)
+          : moviesForShow
+        ).map(movie => (
           <MoviesCard
             key={movie.id || movie._id}
             onDeleteFilm={onDeleteFilm}
@@ -73,24 +83,30 @@ export function MoviesCardList({
             movie={movie}
           />
         ))}
-      </ul>
-      {isMovies
-        ?
-        <button
+      </MoviesCardListElement>
+      {isMovies ? (
+        <MoviesCardButton
           type="button"
-          className="movies-card-list__button"
           onClick={() => {
             if (sizeScreen.width <= SCREEN_SIZE.MIDDLE) {
               setNextPage(currentPage + ADD_CARDS.MIN);
             } else {
               setNextPage(currentPage + ADD_CARDS.MAX);
             }
-          }}
-        >
+          }}>
           Ещё
-        </button>
-        : null
-      }
-    </section>
+        </MoviesCardButton>
+      ) : null}
+    </MoviesCardListStyled>
   );
+}
+MoviesCardList.propTypes = {
+  isNothing: PropTypes.bool.isRequired,
+  onSaveFilm: PropTypes.func,
+  onDeleteFilm: PropTypes.func.isRequired,
+  savedMoviesList: PropTypes.arrayOf(objectOf).isRequired,
+  moviesForShow: PropTypes.arrayOf(objectOf).isRequired,
+};
+MoviesCardList.defaultProps = {
+  onSaveFilm: PropTypes.func,
 };

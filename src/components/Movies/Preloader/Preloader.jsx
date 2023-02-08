@@ -1,21 +1,21 @@
-import './Preloader.css';
+import React from 'react';
 
-export const Loader = () => {
+import { PreloaderContainer, PreloaderRound, PreloaderStyled } from './styled';
+
+export function Loader() {
   return (
-    <div className="preloader">
-          <div className="preloader__container">
-            <div className="preloader__round" >
+    <PreloaderStyled>
+      <PreloaderContainer>
+        <PreloaderRound>
+          <div>
+            <div>
               <div>
                 <div>
                   <div>
                     <div>
                       <div>
                         <div>
-                          <div>
-                            <div>
-                              <div></div>
-                            </div>
-                          </div>
+                          <div />
                         </div>
                       </div>
                     </div>
@@ -24,6 +24,8 @@ export const Loader = () => {
               </div>
             </div>
           </div>
-        </div>
+        </PreloaderRound>
+      </PreloaderContainer>
+    </PreloaderStyled>
   );
-};
+}

@@ -1,55 +1,99 @@
 import React from 'react';
-
-import './MoviesCard.css';
-
 import { useLocation } from 'react-router-dom';
+import PropTypes from 'prop-types';
+
 import { ROUTER_PATH } from '../../../constants';
+
+import {
+  MoviesCardButton,
+  MoviesCardInfo,
+  MoviesCardPoster,
+  MoviesCardStyled,
+  MoviesCardTextContainer,
+  MoviesCardTime,
+  MoviesCardTitle,
+  MoviesCardTrailer,
+} from './styled';
 
 export function MoviesCard({ movie, saved, onSaveFilm, onDeleteFilm }) {
   const location = useLocation();
 
-  function handleLike() {
+  const handleLike = () => {
     onSaveFilm(movie);
-  }
+  };
 
-  function handleDelete() {
+  const handleDelete = () => {
     onDeleteFilm(movie);
-  }
+  };
 
   function transformDuration(duration) {
     const hours = Math.trunc(duration / 60);
     const minutes = duration % 60;
     if (hours === 0) {
       return `${minutes}м`;
-    } else {
-      return `${hours}ч ${minutes}м`;
     }
+    return `${hours}ч ${minutes}м`;
   }
 
-  const savedClass = 'movies-card__button_type_saved';
-
   return (
-    <li className="movies-card">
-      <a href={movie.trailerLink} target="_blank" rel="noreferrer" className='movies-card__trailer'><img className="movies-card__poster" alt={movie.nameRU} src={movie.image} /></a>
-      <div className="movies-card__info">
-        <div className="movies-card__text-container">
-          <h2 className="movies-card__title">{movie.nameRU}</h2>
-          <h3 className="movies-card__time">{transformDuration(movie.duration)}</h3>
-        </div>
+    <MoviesCardStyled>
+      <MoviesCardTrailer
+        href={movie.trailerLink}
+        target="_blank"
+        rel="noreferrer">
+        <MoviesCardPoster alt={movie.nameRU} src={movie.image} />
+      </MoviesCardTrailer>
+      <MoviesCardInfo>
+        <MoviesCardTextContainer>
+          <MoviesCardTitle>{movie.nameRU}</MoviesCardTitle>
+          <MoviesCardTime>{transformDuration(movie.duration)}</MoviesCardTime>
+        </MoviesCardTextContainer>
         {location.pathname === ROUTER_PATH.MOVIES && (
-          <button
-            type='button'
-            className={`movies-card__button ${saved ? savedClass : ''}`}
+          <MoviesCardButton
+            type="button"
+            aria-label="like"
             onClick={saved ? handleDelete : handleLike}
+            save={saved}
           />
         )}
         {location.pathname === ROUTER_PATH.SAVED_MOVIES && (
-          <button
-            className={`movies-card__button movies-card__button_type_delete`}
+          <MoviesCardButton
+            type="button"
+            aria-label="dislike"
             onClick={handleDelete}
+            delet
           />
         )}
-      </div>
-    </li>
+      </MoviesCardInfo>
+    </MoviesCardStyled>
   );
+}
+
+MoviesCard.propTypes = {
+  movie: PropTypes.object.isRequired,
+  saved: PropTypes.object,
+  onSaveFilm: PropTypes.func,
+  onDeleteFilm: PropTypes.func.isRequired,
 };
+MoviesCard.defaultProps = {
+  onSaveFilm: () => {},
+  saved: undefined,
+};
+// saved: PropTypes.objectOf(
+//   shape({
+//     country: PropTypes.string.isRequired,
+//     description: PropTypes.string.isRequired,
+//     director: PropTypes.string.isRequired,
+//     duration: PropTypes.number.isRequired,
+//     image: PropTypes.string.isRequired,
+//     movieId: PropTypes.number.isRequired,
+//     nameEN: PropTypes.string.isRequired,
+//     nameRU: PropTypes.string.isRequired,
+//     owner: PropTypes.string.isRequired,
+//     thumbnail: PropTypes.string.isRequired,
+//     trailerLink: PropTypes.string.isRequired,
+//     year: PropTypes.string.isRequired,
+//     __v: PropTypes.number.isRequired,
+//     _id: PropTypes.string.isRequired,
+//   }),
+// )
