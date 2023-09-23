@@ -1,15 +1,15 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import './ErrorPage.css';
+import { ErrorPageBtn, ErrorPageStyled } from './styled';
 
 export function ErrorPage() {
-    const navigate = useNavigate();
-    const back = () => navigate(-1);
+  const navigate = useNavigate();
+  const back = () => navigate(-1);
 
-    return (
-        <div className="error-page">
-            <button className='error-page__btn' onClick={back}>⚠ БЕГИИИИ!!! ⚠</button>
-        </div>
-    )
-};
+  return (
+    <ErrorPageStyled>
+      <ErrorPageBtn onClick={back}>⚠ БЕГИИИИ!!! ⚠</ErrorPageBtn>
+    </ErrorPageStyled>
+  );
+}

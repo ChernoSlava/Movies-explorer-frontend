@@ -1,15 +1,19 @@
 import React from 'react';
-
-import './Header.css';
+import PropTypes from 'prop-types';
 
 import { Logo } from '../Logo';
 import { Navigation } from '../Navigation';
 
+import { HeaderStyled } from './styled';
+
 export function Header({ loggedIn }) {
   return (
-    <header className='header'>
+    <HeaderStyled>
       <Logo />
       <Navigation loggedIn={loggedIn} />
-    </header>
+    </HeaderStyled>
   );
+}
+Header.propTypes = {
+  loggedIn: PropTypes.bool.isRequired,
 };

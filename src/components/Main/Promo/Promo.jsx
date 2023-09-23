@@ -1,16 +1,18 @@
 import React from 'react';
 
-import './Promo.css';
-
 import { NavTab } from '../NavTab';
+
+import { PromoScreen, PromoStyled, PromoTitle } from './styled';
 
 export function Promo() {
   return (
-    <section className="promo">
-      <div className='promo__screen'>
-        <h1 className='promo__title'>Учебный проект студента факультета Веб-разработки.</h1>
+    <PromoStyled>
+      <PromoScreen>
+        <PromoTitle>
+          Учебный проект студента факультета Веб-разработки.
+        </PromoTitle>
         <NavTab />
-      </div>
-    </section>
+      </PromoScreen>
+    </PromoStyled>
   );
-};
+}

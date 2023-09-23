@@ -1,21 +1,27 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import PropTypes from 'prop-types';
 
-import './SearchForm.css';
-
+import { ROUTER_PATH } from '../../../constants';
 import { useForm } from '../../../hooks';
 import { CurrentUserContext } from '../../contexts';
-import { ROUTER_PATH } from '../../../constants';
-import { useState } from 'react';
 
-export function SearchForm({
-  onSubmit,
-  handleShortMovies,
-  shortMovies
-}) {
+import {
+  SearchFormButton,
+  SearchFormCheckbox,
+  SearchFormCheckboxContainer,
+  SearchFormCheckboxLabel,
+  SearchFormFieldError,
+  SearchFormFieldset,
+  SearchFormInput,
+  SearchFormMain,
+  SearchFormStyled,
+  SearchFormText,
+} from './styled';
 
+export function SearchForm({ onSubmit, handleShortMovies, shortMovies }) {
   const location = useLocation();
-  const user = useContext(CurrentUserContext);
+  const { email } = useContext(CurrentUserContext);
 
   const { values, handleChange, isEmptiness, setIsEmptiness } = useForm({});
   const [emptySearch, setEmptySearch] = useState('');
@@ -24,59 +30,68 @@ export function SearchForm({
 
   const savedMoviesLocation = location.pathname === ROUTER_PATH.SAVED_MOVIES;
   const spanContainer = !savedMoviesLocation && emptySearch;
+  const checkbox = 'box';
 
-  function handleSubmit(evt) {
+  const handleSubmit = evt => {
     evt.preventDefault();
-    isEmptiness ? onSubmit(values.film) : setEmptySearch(textError);
-  }
+    if (isEmptiness) {
+      onSubmit(values.film);
+    } else {
+      setEmptySearch(textError);
+    }
+  };
 
   useEffect(() => {
-    if (location.pathname === ROUTER_PATH.MOVIES && localStorage.getItem(`${user.email} - movieSearch`)) {
-      const searchValue = localStorage.getItem(`${user.email} - movieSearch`);
+    if (
+      location.pathname === ROUTER_PATH.MOVIES &&
+      localStorage.getItem(`${email} - movieSearch`)
+    ) {
+      const searchValue = localStorage.getItem(`${email} - movieSearch`);
       values.film = searchValue;
       setIsEmptiness(true);
     }
-  }, [user]);
+  }, [email]);
 
   useEffect(() => {
-    setEmptySearch('')
+    setEmptySearch('');
   }, [isEmptiness]);
 
   return (
-    <div className="search-form">
-      <form className='search-form__form' onSubmit={handleSubmit} noValidate>
-        <fieldset className='search-form__field'>
-          <span className={`search-form__field-error`}>{spanContainer}</span>
-          <input
+    <SearchFormStyled>
+      <SearchFormMain onSubmit={handleSubmit} noValidate>
+        <SearchFormFieldset>
+          <SearchFormFieldError>{spanContainer}</SearchFormFieldError>
+          <SearchFormInput
             type="text"
             placeholder="Фильм"
             name="film"
             minLength={1}
-            className="search-form__input"
-            id='film'
+            id="film"
             required
             onChange={handleChange}
             value={values.film || ''}
           />
-          <button
-            type="submit"
-            aria-label="Найти"
-            className="search-form__button"
-          />
-        </fieldset>
-        <div className='search-form__checkbox-container'>
-          <input
-            type="checkbox"
-            name="checkbox"
-            id="checkbox"
-            onChange={handleShortMovies}
-            checked={shortMovies ? true : false}
-            className='search-form__checkbox'
-          />
-          <label className="search-form__checkbox-label" htmlFor="checkbox" />
-          <p className="search-form__text">Короткометражки</p>
-        </div>
-      </form>
-    </div>
+          <SearchFormButton type="submit" aria-label="Найти" />
+        </SearchFormFieldset>
+        <SearchFormCheckboxContainer>
+          <SearchFormCheckboxLabel htmlFor={checkbox} checked={!!shortMovies}>
+            <SearchFormCheckbox
+              type="checkbox"
+              name="checkbox"
+              id={checkbox}
+              onChange={handleShortMovies}
+              checked={!!shortMovies}
+            />
+          </SearchFormCheckboxLabel>
+          <SearchFormText>Короткометражки</SearchFormText>
+        </SearchFormCheckboxContainer>
+      </SearchFormMain>
+    </SearchFormStyled>
   );
+}
+
+SearchForm.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
+  handleShortMovies: PropTypes.func.isRequired,
+  shortMovies: PropTypes.bool.isRequired,
 };
